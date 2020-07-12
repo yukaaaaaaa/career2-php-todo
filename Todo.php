@@ -4,13 +4,18 @@ date_default_timezone_set('Asia/Tokyo');
 
 require 'vendor/autoload.php';
 
-use Cassandra\Date;
 use Dotenv\Dotenv;
 
 class Todo
 {
     private $dotenv;
     private $dbh;
+
+    const STATUS = [
+        '未着手',
+        '作業中',
+        '完了',
+    ];
 
     // コンストラクタ
     public function __construct()
@@ -23,19 +28,23 @@ class Todo
 
     public function getList()
     {
-        $stmt = $this->dbh->query("SELECT * FROM `todo` WHERE `deleted_at` IS NULL ORDER BY `created_at` ASC");
-        return $stmt->fetchAll();
+        $stmt = $this->dbh->query("SELECT * FROM `todo` WHERE `deleted_at` IS NULL ORDER BY `due_date` ASC");
+        return array_map(function ($todo) {
+            $todo["status"] = intval($todo["status"]);
+            $todo["status_for_display"] = self::STATUS[$todo["status"]];
+            return $todo;
+        }, $stmt->fetchAll());
     }
 
     /**
      * @param string $title
-     * @param Date $due_date
+     * @param string $due_date
      */
-    public function post(string $title, Date $due_date)
+    public function post(string $title, string $due_date)
     {
         $stmt = $this->dbh->prepare("INSERT INTO `todo` (title, due_date) VALUES (:title, :due_date)");
         $stmt->bindParam(':title', $title, PDO::PARAM_STR);
-        $stmt->bindParam(':due_date', $due_date, PDO::PARAM_DATE);
+        $stmt->bindParam(':due_date', $due_date, PDO::PARAM_STR);
         $stmt->execute();
     }
 
