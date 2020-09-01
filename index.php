@@ -33,6 +33,24 @@ function checkToken()
 if (empty($_SESSION['token'])) {
     setToken();
 }
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (isset($_POST["method"]) && $_POST["method"] === "DELETE") {
+        $todo->delete();
+    } elseif (isset($_POST["method"]) && $_POST["method"] === "UPDATE") {
+        $todo->update($_POST["todo_id"], $_POST['status']);
+    } else {
+        checkToken();
+        $todo->post($_POST['title'], $_POST['due_date']);
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+    // ブラウザのリロード対策
+    $redirect_url = $_SERVER['HTTP_REFERER'];
+    header("Location: $redirect_url");
+    exit;
+}
 ?>
 
 <!DOCTYPE>
@@ -76,26 +94,6 @@ if (empty($_SESSION['token'])) {
             <button class="btn btn-danger" type="submit">TODOを全削除する</button>
         </form>
         <?php
-
-
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            if (isset($_POST["method"]) && $_POST["method"] === "DELETE") {
-                $todo->delete();
-            } elseif (isset($_POST["method"]) && $_POST["method"] === "UPDATE") {
-                $todo->update($_POST["todo_id"], $_POST['status']);
-            } else {
-                checkToken();
-                $todo->post($_POST['title'], $_POST['due_date']);
-            }
-        }
-
-        if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-            // ブラウザのリロード対策
-            $redirect_url = $_SERVER['HTTP_REFERER'];
-            header("Location: $redirect_url");
-            exit;
-        }
-
         $todo_list = $todo->getList();
         ?>
         <table class="table">
