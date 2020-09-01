@@ -100,8 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
             <thead>
             <tr>
                 <th>タイトル</th>
-                <th>状態</th>
                 <th>期限</th>
+                <th>状態</th>
                 <th>更新</th>
             </tr>
             </thead>
