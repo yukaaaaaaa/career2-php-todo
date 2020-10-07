@@ -6,7 +6,6 @@ require 'vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-
 class Todo
 {
     private $dotenv;
@@ -49,18 +48,19 @@ class Todo
      */
     public function post(string $title, string $due_date, array $image_file = null)
     {
+        $image = null;
         if (!empty($image_file) && !empty($image_file['name'])) {
             // ファイル名をユニーク化
             $image = uniqid(mt_rand(), true);
             // アップロードされたファイルの拡張子を取得
             $image .= '.' . substr(strrchr($image_file['name'], '.'), 1);
             // uploadディレクトリにファイル保存
-           move_uploaded_file($image_file['tmp_name'], './upload/' . $image);
-            // move_uploaded_file($image_file['tmp_name'], './' . $image);
+            move_uploaded_file($image_file['tmp_name'], './upload/' . $image);
         }
-        $stmt = $this->dbh->prepare("INSERT INTO `todo` (title, due_date) VALUES (:title, :due_date)");
+        $stmt = $this->dbh->prepare("INSERT INTO `todo` (title, due_date, image) VALUES (:title, :due_date, :image)");
         $stmt->bindParam(':title', $title, PDO::PARAM_STR);
         $stmt->bindParam(':due_date', $due_date, PDO::PARAM_STR);
+        $stmt->bindParam(':image', $image, PDO::PARAM_STR);
         $stmt->execute();
     }
 
